@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Çekiliş Sonuçları</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+</head>
+<body>
+<h2>📢 Anlık Çekiliş Sonuçları</h2>
+<pre id="results" style="background:#eee;padding:10px;"></pre>
+
+<script>
+    const socket = new SockJS("http://localhost:8080/ws");
+    const stompClient = Stomp.over(socket);
+
+    stompClient.connect({}, () => {
+        stompClient.subscribe("/topic/draw-results", (message) => {
+            const result = JSON.parse(message.body);
+            document.getElementById("results").textContent +=
+                `\n🎯 Çekiliş #${result.drawId} → ${result.closedAt} \nKazanan Numara: ${result.winningNumbers.join(", ")}\n`;
+        });
+    });
+</script>
+</body>
+</html>
