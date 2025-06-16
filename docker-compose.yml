@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  # 1. RabbitMQ Servisi
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq
+    ports:
+      # RabbitMQ Yönetim Arayüzü için (isteğe bağlı)
+      - "15672:15672"
+      # Uygulama bağlantısı için
+      - "5672:5672"
+    networks:
+      - lotto-network
+
+  # 2. Spring Boot Uygulama Servisi
+  app:
+    # Dockerfile'ın bulunduğu dizinden imajı oluşturur
+    build: .
+    container_name: lottofun-container
+    depends_on:
+      # Uygulamanın başlamadan önce rabbitmq'nun başlamasını bekle
+      - rabbitmq
+    ports:
+      - "8080:8080"
+    environment:
+      # Spring Boot'a RabbitMQ sunucusunun adresini bildirir
+      - SPRING_RABBITMQ_HOST=rabbitmq
+    networks:
+      - lotto-network
+
+# Servislerin iletişim kuracağı ortak ağ
+networks:
+  lotto-network:
+    driver: bridge
+
